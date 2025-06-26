@@ -3,9 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, MessageCircle, Send, AlertTriangle, CheckCircle, Package, Zap, Eye, Plus, Edit, Trash2 } from 'lucide-react';
+import { AuditLog } from '@/data/auditLogs';
+import { MessageCircle, Zap, Eye, Plus, Edit } from 'lucide-react';
 
 // MynaUI-style inline SVG icons for chat interface
 const MynaArrowLeft = ({ className }: { className?: string }) => (
@@ -33,36 +32,12 @@ interface ChatMessage {
   timestamp: string;
 }
 
-interface AuditLog {
-  id: string;
-  timestamp: string;
-  user: string;
-  workflow: string;
-  errorType: string;
-  errorMessage: string | null;
-  userInput: string;
-  completionTime: string | null;
-  validationChecks: string[];
-  resolution: string;
-  severity: string;
-}
-
 const MCPChatPage = () => {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [userInput, setUserInput] = useState('');
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
-  const [workflowMetrics, setWorkflowMetrics] = useState({
-    totalWorkflows: 127,
-    successfulWorkflows: 98,
-    userErrors: 18,
-    systemErrors: 7,
-    businessErrors: 4,
-    averageCompletionTime: '2.1 seconds',
-    mostCommonError: 'Invalid email format',
-    peakUsageTime: '14:00-15:00'
-  });
 
   // Get workflow details from URL parameters
   const selectedPrompt = searchParams.get('workflow') || '';
@@ -119,16 +94,6 @@ const MCPChatPage = () => {
     };
     
     setAuditLogs(prev => [newLog, ...prev]);
-    
-    // Update metrics
-    setWorkflowMetrics(prev => ({
-      ...prev,
-      totalWorkflows: prev.totalWorkflows + 1,
-      successfulWorkflows: errorType === 'SUCCESS' ? prev.successfulWorkflows + 1 : prev.successfulWorkflows,
-      userErrors: errorType === 'USER_ERROR' ? prev.userErrors + 1 : prev.userErrors,
-      systemErrors: errorType === 'SYSTEM_ERROR' ? prev.systemErrors + 1 : prev.systemErrors,
-      businessErrors: errorType === 'BUSINESS_ERROR' ? prev.businessErrors + 1 : prev.businessErrors
-    }));
   };
 
   const getAgentResponse = (prompt: string, operationType: string) => {
