@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { BarChart3, Trash2 } from 'lucide-react';
+import { FileText, Trash2 } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { AuditLog } from '@/data/auditLogs';
 import { WorkflowMetrics } from '@/data/workflowMetrics';
@@ -359,23 +359,23 @@ export const MCPWorkflowInterfaceClient: React.FC<MCPWorkflowInterfaceClientProp
         <Tabs value={currentTab} onValueChange={handleTabChange} className="space-y-6">
           <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="read" className="flex items-center gap-2">
-              <BarChart3 className="h-4 w-4" />
+              {React.createElement(getWorkflowConfig('read').icon, { className: 'h-4 w-4' })}
               Read Operations
             </TabsTrigger>
             <TabsTrigger value="create" className="flex items-center gap-2">
-              <BarChart3 className="h-4 w-4" />
+              {React.createElement(getWorkflowConfig('create').icon, { className: 'h-4 w-4' })}
               Create Operations
             </TabsTrigger>
             <TabsTrigger value="modify" className="flex items-center gap-2">
-              <BarChart3 className="h-4 w-4" />
+              {React.createElement(getWorkflowConfig('modify').icon, { className: 'h-4 w-4' })}
               Modify/Delete
             </TabsTrigger>
             <TabsTrigger value="chained" className="flex items-center gap-2">
-              <BarChart3 className="h-4 w-4" />
+              {React.createElement(getWorkflowConfig('chained').icon, { className: 'h-4 w-4' })}
               Chained Workflows
             </TabsTrigger>
             <TabsTrigger value="audit" className="flex items-center gap-2">
-              <BarChart3 className="h-4 w-4" />
+              <FileText className="h-4 w-4" />
               Audit Logs
             </TabsTrigger>
           </TabsList>
