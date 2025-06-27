@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { AlertTriangle, ChevronDown, ChevronUp } from 'lucide-react';
+import { AlertTriangle, ChevronDown, ChevronUp, Loader2 } from 'lucide-react';
+import { fetchHumanLoopData } from '@/lib/api';
+import { HumanLoopExample } from '@/data/humanLoop';
 
 interface HumanLoopSectionProps {
   isHumanLoopExpanded: boolean;
@@ -11,9 +13,77 @@ export const HumanLoopSection: React.FC<HumanLoopSectionProps> = ({
   isHumanLoopExpanded,
   setIsHumanLoopExpanded,
 }) => {
+  const [humanLoopData, setHumanLoopData] = useState<{ intro: string; examples: HumanLoopExample[] } | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadHumanLoopData = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        const data = await fetchHumanLoopData();
+        setHumanLoopData(data);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load human-in-the-loop data');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadHumanLoopData();
+  }, []);
+
   const handleHeaderClick = () => {
     console.log('HumanLoopSection header clicked, current state:', isHumanLoopExpanded);
     setIsHumanLoopExpanded(!isHumanLoopExpanded);
+  };
+
+  const getColorClasses = (color: string) => {
+    switch (color) {
+      case 'blue':
+        return {
+          bg: 'bg-blue-50 dark:bg-blue-900',
+          border: 'border-blue-200 dark:border-blue-700',
+          title: 'text-blue-800 dark:text-blue-200',
+          text: 'text-blue-700 dark:text-blue-300'
+        };
+      case 'amber':
+        return {
+          bg: 'bg-amber-50 dark:bg-amber-900',
+          border: 'border-amber-200 dark:border-amber-700',
+          title: 'text-amber-800 dark:text-amber-200',
+          text: 'text-amber-700 dark:text-amber-300'
+        };
+      case 'red':
+        return {
+          bg: 'bg-red-50 dark:bg-red-900',
+          border: 'border-red-200 dark:border-red-700',
+          title: 'text-red-800 dark:text-red-200',
+          text: 'text-red-700 dark:text-red-300'
+        };
+      case 'green':
+        return {
+          bg: 'bg-green-50 dark:bg-green-900',
+          border: 'border-green-200 dark:border-green-700',
+          title: 'text-green-800 dark:text-green-200',
+          text: 'text-green-700 dark:text-green-300'
+        };
+      case 'purple':
+        return {
+          bg: 'bg-purple-50 dark:bg-purple-900',
+          border: 'border-purple-200 dark:border-purple-700',
+          title: 'text-purple-800 dark:text-purple-200',
+          text: 'text-purple-700 dark:text-purple-300'
+        };
+      default:
+        return {
+          bg: 'bg-gray-50 dark:bg-gray-900',
+          border: 'border-gray-200 dark:border-gray-700',
+          title: 'text-gray-800 dark:text-gray-200',
+          text: 'text-gray-700 dark:text-gray-300'
+        };
+    }
   };
 
   return (
@@ -28,6 +98,7 @@ export const HumanLoopSection: React.FC<HumanLoopSectionProps> = ({
             Human-in-the-Loop Interactions
           </CardTitle>
           <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
+            {isLoading && <Loader2 className="h-4 w-4 animate-spin" />}
             {isHumanLoopExpanded ? (
               <ChevronUp className="h-4 w-4" />
             ) : (
@@ -39,53 +110,40 @@ export const HumanLoopSection: React.FC<HumanLoopSectionProps> = ({
       
       {isHumanLoopExpanded && (
         <CardContent className="space-y-4">
-          <p className="text-sm text-gray-700 dark:text-gray-300">
-            All create, modify, and delete operations require explicit user confirmation before execution to prevent accidental changes.
-          </p>
-          
-          <div className="space-y-3">
-            <div className="p-3 bg-blue-50 border border-blue-200 dark:bg-blue-900 dark:border-blue-700 rounded">
-              <p className="font-semibold text-blue-800 dark:text-blue-200 text-sm">Contact Updates</p>
-              <p className="text-blue-700 dark:text-blue-300 text-xs mt-1">
-                &quot;I found contact for email address you provided. You want to update first name to the new name you specified. This will permanently change the contact information. Do you want to proceed? (yes/no)&quot;
-              </p>
+          {error ? (
+            <div className="text-red-600 dark:text-red-400 text-sm">
+              Error loading data: {error}
             </div>
-            
-            <div className="p-3 bg-amber-50 border border-amber-200 dark:bg-amber-900 dark:border-amber-700 rounded">
-              <p className="font-semibold text-amber-800 dark:text-amber-200 text-sm">Order Creation</p>
-              <p className="text-amber-700 dark:text-amber-300 text-xs mt-1">
-                &quot;I&apos;m about to create an order with the customer email, products, and currency you specified. This will generate a binding order. Confirm to proceed? (yes/no)&quot;
-              </p>
+          ) : !humanLoopData ? (
+            <div className="flex items-center justify-center py-4">
+              <Loader2 className="h-6 w-6 animate-spin text-blue-600" />
             </div>
-            
-            <div className="p-3 bg-red-50 border border-red-200 dark:bg-red-900 dark:border-red-700 rounded">
-              <p className="font-semibold text-red-800 dark:text-red-200 text-sm">Order Cancellation</p>
-              <p className="text-red-700 dark:text-red-300 text-xs mt-1">
-                &quot;Ready to cancel the order/line items you specified. This will permanently remove these items and may trigger a partial refund. Continue? (yes/no)&quot;
+          ) : (
+            <>
+              <p className="text-sm text-gray-700 dark:text-gray-300">
+                {humanLoopData.intro}
               </p>
-            </div>
-            
-            <div className="p-3 bg-green-50 border border-green-200 dark:bg-green-900 dark:border-green-700 rounded">
-              <p className="font-semibold text-green-800 dark:text-green-200 text-sm">Drawdown Order Creation</p>
-              <p className="text-green-700 dark:text-green-300 text-xs mt-1">
-                &quot;I&apos;m about to create a drawdown order with £50,000 credit for customer, valid for 12 months with quarterly billing. This will set up pre-paid credits and future invoice schedule. Confirm to proceed? (yes/no)&quot;
-              </p>
-            </div>
-            
-            <div className="p-3 bg-blue-50 border border-blue-200 dark:bg-blue-900 dark:border-blue-700 rounded">
-              <p className="font-semibold text-blue-800 dark:text-blue-200 text-sm">Credit Application</p>
-              <p className="text-blue-700 dark:text-blue-300 text-xs mt-1">
-                &quot;Ready to apply £5,000 drawdown credit to order. Current balance: £25,000. Remaining after application: £20,000. This will reduce customer&apos;s available drawdown credits. Continue? (yes/no)&quot;
-              </p>
-            </div>
-            
-            <div className="p-3 bg-purple-50 border border-purple-200 dark:bg-purple-900 dark:border-purple-700 rounded">
-              <p className="font-semibold text-purple-800 dark:text-purple-200 text-sm">Chained Workflow</p>
-              <p className="text-purple-700 dark:text-purple-300 text-xs mt-1">
-                &quot;I&apos;ll execute this 4-step workflow: Step 1: Convert prospect opportunity → Step 2: Find contact → Step 3: Update details → Step 4: Create sales link. This will modify data across multiple systems. Execute complete workflow chain? (yes/no)&quot;
-              </p>
-            </div>
-          </div>
+              
+              <div className="space-y-3">
+                {humanLoopData.examples.map((example, index) => {
+                  const colorClasses = getColorClasses(example.color);
+                  return (
+                    <div 
+                      key={index}
+                      className={`p-3 ${colorClasses.bg} border ${colorClasses.border} rounded`}
+                    >
+                      <p className={`font-semibold ${colorClasses.title} text-sm`}>
+                        {example.title}
+                      </p>
+                      <p className={`${colorClasses.text} text-xs mt-1`}>
+                        {example.message}
+                      </p>
+                    </div>
+                  );
+                })}
+              </div>
+            </>
+          )}
         </CardContent>
       )}
     </Card>

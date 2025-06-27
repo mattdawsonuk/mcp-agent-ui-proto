@@ -5,7 +5,8 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { AuditLog } from '@/data/auditLogs';
 import { getWorkflowConfig } from '@/lib/workflowColors';
-import { fetchAuditLogs } from '@/lib/api';
+import { fetchAuditLogs, fetchUserProfile } from '@/lib/api';
+import { UserProfile } from '@/data/userProfile';
 import { Loader2 } from 'lucide-react';
 
 // MynaUI-style inline SVG icons for chat interface
@@ -40,6 +41,7 @@ const MCPChatPage = () => {
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [userInput, setUserInput] = useState('');
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const chatEndRef = useRef<HTMLDivElement | null>(null);
 
   // Get workflow details from URL parameters
@@ -58,6 +60,20 @@ const MCPChatPage = () => {
     };
 
     loadAuditLogs();
+  }, []);
+
+  // Fetch user profile on component mount
+  useEffect(() => {
+    const loadUserProfile = async () => {
+      try {
+        const profile = await fetchUserProfile();
+        setUserProfile(profile);
+      } catch (error) {
+        console.error('Failed to fetch user profile:', error);
+      }
+    };
+
+    loadUserProfile();
   }, []);
 
   // Store current MCP state when navigating to chat
@@ -136,7 +152,7 @@ const MCPChatPage = () => {
         second: '2-digit',
         hour12: false 
       }),
-      user: 'current.user@example.com', // In real implementation, this would come from auth
+      user: userProfile?.email || 'current.user@example.com', // Use profile email if available
       workflow,
       errorType,
       errorMessage,
