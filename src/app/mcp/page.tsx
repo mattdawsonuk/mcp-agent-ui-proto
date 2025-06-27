@@ -41,54 +41,37 @@ const MCPWorkflowInterface = () => {
     const type = urlParams.get('type');
     const expandedSectionFromURL = urlParams.get('section');
     
-    console.log('Scroll effect triggered on mount');
-    console.log('workflow:', workflow);
-    console.log('type:', type);
-    console.log('expandedSectionFromURL:', expandedSectionFromURL);
-    console.log('Available refs:', Object.keys(sectionRefs.current));
-    
     // Only scroll if we have URL parameters indicating navigation back from chat or page refresh
     if (workflow || expandedSectionFromURL) {
-      console.log('URL parameters found, attempting to scroll');
-      
       const scrollToSection = () => {
         if (workflow && type) {
           // Find which section contains this workflow
           const sectionKey = findSectionKeyForWorkflow(workflow, type);
-          console.log('Found sectionKey for workflow:', sectionKey);
           if (sectionKey && sectionRefs.current[sectionKey]) {
-            console.log('Scrolling to workflow section:', sectionKey);
             setTimeout(() => {
               sectionRefs.current[sectionKey]?.scrollIntoView({ 
                 behavior: 'smooth', 
                 block: 'start' 
               });
             }, 500);
-          } else {
-            console.log('Section ref not found for workflow:', sectionKey);
           }
         } else if (expandedSectionFromURL) {
           // Convert stable key to index key for ref lookup
           const indexKey = findIndexKeyFromStableKey(expandedSectionFromURL);
-          console.log('Converted stable key to index key:', expandedSectionFromURL, '->', indexKey);
           
           if (indexKey && sectionRefs.current[indexKey]) {
-            console.log('Scrolling to expanded section:', expandedSectionFromURL);
             // Scroll to expanded section with offset
             setTimeout(() => {
               const element = sectionRefs.current[indexKey];
               if (element) {
                 const elementTop = element.offsetTop;
                 const offset = 100; // 100px offset from top
-                console.log('Scrolling to position:', elementTop - offset);
                 window.scrollTo({
                   top: elementTop - offset,
                   behavior: 'smooth'
                 });
               }
             }, 500);
-          } else {
-            console.log('Expanded section ref not found. Stable key:', expandedSectionFromURL, 'Index key:', indexKey);
           }
         }
       };
@@ -98,17 +81,13 @@ const MCPWorkflowInterface = () => {
       const maxRetries = 20;
       
       const attemptScroll = () => {
-        console.log('Scroll attempt:', retryCount + 1);
         if (workflow && type) {
           const sectionKey = findSectionKeyForWorkflow(workflow, type);
           if (sectionKey && sectionRefs.current[sectionKey]) {
             scrollToSection();
           } else if (retryCount < maxRetries) {
             retryCount++;
-            console.log('Retrying scroll, attempt:', retryCount);
             setTimeout(attemptScroll, 100);
-          } else {
-            console.log('Max retries reached for workflow scroll');
           }
         } else if (expandedSectionFromURL) {
           // Convert stable key to index key for ref lookup
@@ -117,17 +96,12 @@ const MCPWorkflowInterface = () => {
             scrollToSection();
           } else if (retryCount < maxRetries) {
             retryCount++;
-            console.log('Retrying scroll, attempt:', retryCount);
             setTimeout(attemptScroll, 100);
-          } else {
-            console.log('Max retries reached for expanded section scroll');
           }
         }
       };
 
       attemptScroll();
-    } else {
-      console.log('No URL parameters found, skipping scroll');
     }
   }, []); // Only run on mount
 
@@ -161,11 +135,9 @@ const MCPWorkflowInterface = () => {
   };
 
   const findIndexKeyFromStableKey = (stableKey: string): string | null => {
-    console.log('findIndexKeyFromStableKey called with:', stableKey);
     const firstHyphenIndex = stableKey.indexOf('-');
     const type = stableKey.substring(0, firstHyphenIndex);
     const categorySlug = stableKey.substring(firstHyphenIndex + 1);
-    console.log('Parsed type:', type, 'categorySlug:', categorySlug);
     
     let operations;
     
@@ -183,33 +155,24 @@ const MCPWorkflowInterface = () => {
         operations = chainedOperations;
         break;
       default:
-        console.log('Unknown type:', type);
         return null;
     }
-    
-    console.log('Operations length:', operations.length);
     
     if (operations) {
       const sectionIndex = operations.findIndex(section => {
         const sectionSlug = section.category.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
-        console.log('Comparing sectionSlug:', sectionSlug, 'with categorySlug:', categorySlug);
         return sectionSlug === categorySlug;
       });
-      console.log('Found sectionIndex:', sectionIndex);
       if (sectionIndex >= 0) {
         const indexKey = `${type}-${sectionIndex}`;
-        console.log('Returning indexKey:', indexKey);
         return indexKey;
       }
     }
     
-    console.log('No matching section found');
     return null;
   };
 
   const updateURL = (newParams: Record<string, string | null>) => {
-    console.log('updateURL called with params:', newParams);
-    
     try {
       const params = new URLSearchParams(searchParams?.toString() || '');
       
@@ -222,7 +185,6 @@ const MCPWorkflowInterface = () => {
       });
       
       const newURL = `/mcp?${params.toString()}`;
-      console.log('Updating URL to:', newURL);
       router.push(newURL, { scroll: false });
     } catch (error) {
       console.error('Error updating URL:', error);
@@ -230,9 +192,6 @@ const MCPWorkflowInterface = () => {
   };
 
   const toggleSectionExpanded = (sectionKey: string) => {
-    console.log('toggleSectionExpanded called with sectionKey:', sectionKey);
-    
-    // Extract the type and find the category from the workflow data
     const type = sectionKey.split('-')[0];
     let operations;
     
@@ -250,28 +209,18 @@ const MCPWorkflowInterface = () => {
         operations = chainedOperations;
         break;
       default:
-        console.log('Unknown type:', type);
         return;
     }
     
-    // Find the section by extracting the index from the sectionKey
     const sectionIndex = parseInt(sectionKey.split('-')[1]);
-    console.log('sectionIndex:', sectionIndex, 'operations length:', operations.length);
     
     if (sectionIndex >= 0 && sectionIndex < operations.length) {
       const section = operations[sectionIndex];
-      console.log('Found section:', section.category);
       const stableSectionKey = `${type}-${section.category.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')}`;
-      console.log('stableSectionKey:', stableSectionKey);
       
-      // Read current section directly from searchParams to avoid timing issues
       const currentSection = searchParams?.get('section');
-      console.log('currentSection from searchParams:', currentSection);
       const newExpandedSection = currentSection === stableSectionKey ? null : stableSectionKey;
-      console.log('newExpandedSection:', newExpandedSection);
       updateURL({ section: newExpandedSection });
-    } else {
-      console.log('Invalid sectionIndex:', sectionIndex);
     }
   };
 
@@ -287,7 +236,6 @@ const MCPWorkflowInterface = () => {
   const handlePromptClick = (prompt: string, operationType: string = 'read') => {
     const params = new URLSearchParams({ workflow: prompt, type: operationType });
     
-    // Include current MCP page state in the chat URL
     if (currentTab) params.set('tab', currentTab);
     if (expandedSection) params.set('section', expandedSection);
     if (isHumanLoopExpanded) params.set('humanLoop', 'true');
@@ -305,7 +253,6 @@ const MCPWorkflowInterface = () => {
         if (sectionIndex) {
           const sectionKey = `${operationType}-${sectionIndex}`;
           sectionRefs.current[sectionKey] = el;
-          console.log('Ref assigned for section:', sectionKey);
         }
       }
     }
