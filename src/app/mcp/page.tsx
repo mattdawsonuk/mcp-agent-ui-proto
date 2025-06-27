@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BarChart3, Eye, Plus, Edit, Trash2, Zap } from 'lucide-react';
@@ -21,11 +21,51 @@ const MCPWorkflowInterface = () => {
   const [auditLogs] = useState<AuditLog[]>(initialAuditLogs);
   const [workflowMetrics] = useState<WorkflowMetrics>(initialWorkflowMetrics);
 
+  // Load persisted state from localStorage on component mount
+  useEffect(() => {
+    try {
+      const savedHumanLoopExpanded = localStorage.getItem('mcp-human-loop-expanded');
+      const savedExpandedSections = localStorage.getItem('mcp-expanded-sections');
+      
+      // Add a small delay to ensure proper state application
+      setTimeout(() => {
+        if (savedHumanLoopExpanded !== null) {
+          setIsHumanLoopExpanded(JSON.parse(savedHumanLoopExpanded));
+        }
+        
+        if (savedExpandedSections !== null) {
+          setExpandedSections(JSON.parse(savedExpandedSections));
+        }
+      }, 100);
+    } catch (error) {
+      console.error('Error loading persisted state:', error);
+    }
+  }, []);
+
   const toggleSectionExpanded = (sectionKey: string) => {
-    setExpandedSections(prev => ({
-      ...prev,
-      [sectionKey]: !prev[sectionKey]
-    }));
+    setExpandedSections(prev => {
+      const newState = {
+        ...prev,
+        [sectionKey]: !prev[sectionKey]
+      };
+      // Save to localStorage
+      try {
+        localStorage.setItem('mcp-expanded-sections', JSON.stringify(newState));
+      } catch (error) {
+        console.error('Error saving expanded sections:', error);
+      }
+      return newState;
+    });
+  };
+
+  const handleHumanLoopToggle = (expanded: boolean) => {
+    setIsHumanLoopExpanded(expanded);
+    // Save to localStorage
+    try {
+      localStorage.setItem('mcp-human-loop-expanded', JSON.stringify(expanded));
+    } catch (error) {
+      console.error('Error saving human loop state:', error);
+    }
   };
 
   const handlePromptClick = (prompt: string, operationType: string = 'read') => {
@@ -67,7 +107,7 @@ const MCPWorkflowInterface = () => {
         {/* Human-in-the-Loop Interactions - Expandable/Collapsible */}
         <HumanLoopSection 
           isHumanLoopExpanded={isHumanLoopExpanded}
-          setIsHumanLoopExpanded={setIsHumanLoopExpanded}
+          setIsHumanLoopExpanded={handleHumanLoopToggle}
         />
 
         <div className="w-full">

@@ -63,7 +63,10 @@ const renderWorkflowSection = (
                     variant="outline"
                     size="sm"
                     className={`text-left justify-start ${bgColor} ${textColor} border-0 hover:shadow-md transition-all`}
-                    onClick={() => handlePromptClick(workflow, operationType)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handlePromptClick(workflow, operationType);
+                    }}
                   >
                     <div className="flex items-center gap-2 w-full">
                       {Icon && <Icon />}
