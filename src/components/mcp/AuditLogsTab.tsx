@@ -8,14 +8,16 @@ import { WorkflowMetrics } from '@/data/workflowMetrics';
 interface AuditLogsTabProps {
   auditLogs: AuditLog[];
   workflowMetrics: WorkflowMetrics;
+  setSectionRef?: (el: HTMLDivElement | null) => void;
 }
 
 export const AuditLogsTab: React.FC<AuditLogsTabProps> = ({
   auditLogs,
   workflowMetrics,
+  setSectionRef,
 }) => {
   return (
-    <>
+    <div ref={setSectionRef}>
       <div className="mb-6 p-4 bg-gray-50 border border-gray-200 dark:bg-gray-800 dark:border-gray-700 rounded-lg">
         <div className="flex items-center gap-2 text-gray-800 dark:text-gray-200 mb-3">
           <BarChart3 className="h-5 w-5" />
@@ -185,6 +187,6 @@ export const AuditLogsTab: React.FC<AuditLogsTabProps> = ({
           </div>
         </CardContent>
       </Card>
-    </>
+    </div>
   );
 }; 

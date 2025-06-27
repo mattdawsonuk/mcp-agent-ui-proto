@@ -8,6 +8,7 @@ interface ReadOperationsTabProps {
   expandedSections: Record<string, boolean>;
   toggleSectionExpanded: (sectionKey: string) => void;
   handlePromptClick: (prompt: string, operationType: string) => void;
+  setSectionRef?: (el: HTMLDivElement | null) => void;
 }
 
 const iconMap = {
@@ -26,7 +27,8 @@ const renderWorkflowSection = (
   textColor: string,
   expandedSections: Record<string, boolean>,
   toggleSectionExpanded: (sectionKey: string) => void,
-  handlePromptClick: (prompt: string, operationType: string) => void
+  handlePromptClick: (prompt: string, operationType: string) => void,
+  setSectionRef?: (el: HTMLDivElement | null) => void
 ) => (
   <div className="space-y-6">
     {operations.map((section, sectionIndex) => {
@@ -41,8 +43,10 @@ const renderWorkflowSection = (
       return (
         <Card 
           key={sectionIndex} 
-          className="w-full cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+          className="w-full cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors scroll-mt-24"
           onClick={handleHeaderClick}
+          data-section-index={sectionIndex}
+          ref={setSectionRef}
         >
           <CardHeader className="select-none">
             <div className="flex items-center justify-between">
@@ -92,6 +96,7 @@ export const ReadOperationsTab: React.FC<ReadOperationsTabProps> = ({
   expandedSections,
   toggleSectionExpanded,
   handlePromptClick,
+  setSectionRef,
 }) => {
   return (
     <>
@@ -111,7 +116,8 @@ export const ReadOperationsTab: React.FC<ReadOperationsTabProps> = ({
         'text-green-800 dark:text-green-200',
         expandedSections,
         toggleSectionExpanded,
-        handlePromptClick
+        handlePromptClick,
+        setSectionRef
       )}
     </>
   );

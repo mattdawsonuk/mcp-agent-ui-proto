@@ -8,6 +8,7 @@ interface ModifyDeleteOperationsTabProps {
   expandedSections: Record<string, boolean>;
   toggleSectionExpanded: (sectionKey: string) => void;
   handlePromptClick: (prompt: string, operationType: string) => void;
+  setSectionRef?: (el: HTMLDivElement | null) => void;
 }
 
 const iconMap = {
@@ -25,7 +26,8 @@ const renderWorkflowSection = (
   textColor: string,
   expandedSections: Record<string, boolean>,
   toggleSectionExpanded: (sectionKey: string) => void,
-  handlePromptClick: (prompt: string, operationType: string) => void
+  handlePromptClick: (prompt: string, operationType: string) => void,
+  setSectionRef?: (el: HTMLDivElement | null) => void
 ) => (
   <div className="space-y-6">
     {operations.map((section, sectionIndex) => {
@@ -33,11 +35,17 @@ const renderWorkflowSection = (
       const isExpanded = expandedSections[sectionKey];
       const Icon = iconMap[section.icon as keyof typeof iconMap];
       
+      const handleHeaderClick = () => {
+        toggleSectionExpanded(sectionKey);
+      };
+      
       return (
         <Card 
           key={sectionIndex} 
-          className="w-full cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-          onClick={() => toggleSectionExpanded(sectionKey)}
+          className="w-full cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors scroll-mt-24"
+          onClick={handleHeaderClick}
+          data-section-index={sectionIndex}
+          ref={setSectionRef}
         >
           <CardHeader className="select-none">
             <div className="flex items-center justify-between">
@@ -87,6 +95,7 @@ export const ModifyDeleteOperationsTab: React.FC<ModifyDeleteOperationsTabProps>
   expandedSections,
   toggleSectionExpanded,
   handlePromptClick,
+  setSectionRef,
 }) => {
   return (
     <>
@@ -106,7 +115,8 @@ export const ModifyDeleteOperationsTab: React.FC<ModifyDeleteOperationsTabProps>
         'text-amber-800 dark:text-amber-200',
         expandedSections,
         toggleSectionExpanded,
-        handlePromptClick
+        handlePromptClick,
+        setSectionRef
       )}
     </>
   );

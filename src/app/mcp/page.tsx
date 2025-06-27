@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BarChart3, Eye, Plus, Edit, Trash2, Zap } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { initialAuditLogs, AuditLog } from '@/data/auditLogs';
 import { initialWorkflowMetrics, WorkflowMetrics } from '@/data/workflowMetrics';
+import { readOperations, createOperations, modifyDeleteOperations, chainedOperations } from '@/data/workflowOperations';
 import { HumanLoopSection } from '@/components/mcp/HumanLoopSection';
 import { ReadOperationsTab } from '@/components/mcp/ReadOperationsTab';
 import { CreateOperationsTab } from '@/components/mcp/CreateOperationsTab';
@@ -16,62 +17,337 @@ import { AuditLogsTab } from '@/components/mcp/AuditLogsTab';
 
 const MCPWorkflowInterface = () => {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [isHumanLoopExpanded, setIsHumanLoopExpanded] = useState(false);
-  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({});
   const [auditLogs] = useState<AuditLog[]>(initialAuditLogs);
   const [workflowMetrics] = useState<WorkflowMetrics>(initialWorkflowMetrics);
+  const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
-  // Load persisted state from localStorage on component mount
+  // Get current state from URL parameters
+  const currentTab = searchParams?.get('tab') || 'read';
+  const expandedSection = searchParams?.get('section') || null;
+  const isHumanLoopExpandedFromURL = searchParams?.get('humanLoop') === 'true';
+
+  // Update state when URL parameters change
   useEffect(() => {
-    try {
-      const savedHumanLoopExpanded = localStorage.getItem('mcp-human-loop-expanded');
-      const savedExpandedSections = localStorage.getItem('mcp-expanded-sections');
+    setIsHumanLoopExpanded(isHumanLoopExpandedFromURL);
+  }, [isHumanLoopExpandedFromURL]);
+
+  // Scroll to section only on initial page load (not user interaction)
+  useEffect(() => {
+    // Use window.location.search directly to avoid useSearchParams timing issues
+    const urlParams = new URLSearchParams(window.location.search);
+    const workflow = urlParams.get('workflow');
+    const type = urlParams.get('type');
+    const expandedSectionFromURL = urlParams.get('section');
+    
+    console.log('Scroll effect triggered on mount');
+    console.log('workflow:', workflow);
+    console.log('type:', type);
+    console.log('expandedSectionFromURL:', expandedSectionFromURL);
+    console.log('Available refs:', Object.keys(sectionRefs.current));
+    
+    // Only scroll if we have URL parameters indicating navigation back from chat or page refresh
+    if (workflow || expandedSectionFromURL) {
+      console.log('URL parameters found, attempting to scroll');
       
-      // Add a small delay to ensure proper state application
-      setTimeout(() => {
-        if (savedHumanLoopExpanded !== null) {
-          setIsHumanLoopExpanded(JSON.parse(savedHumanLoopExpanded));
+      const scrollToSection = () => {
+        if (workflow && type) {
+          // Find which section contains this workflow
+          const sectionKey = findSectionKeyForWorkflow(workflow, type);
+          console.log('Found sectionKey for workflow:', sectionKey);
+          if (sectionKey && sectionRefs.current[sectionKey]) {
+            console.log('Scrolling to workflow section:', sectionKey);
+            setTimeout(() => {
+              sectionRefs.current[sectionKey]?.scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'start' 
+              });
+            }, 500);
+          } else {
+            console.log('Section ref not found for workflow:', sectionKey);
+          }
+        } else if (expandedSectionFromURL) {
+          // Convert stable key to index key for ref lookup
+          const indexKey = findIndexKeyFromStableKey(expandedSectionFromURL);
+          console.log('Converted stable key to index key:', expandedSectionFromURL, '->', indexKey);
+          
+          if (indexKey && sectionRefs.current[indexKey]) {
+            console.log('Scrolling to expanded section:', expandedSectionFromURL);
+            // Scroll to expanded section with offset
+            setTimeout(() => {
+              const element = sectionRefs.current[indexKey];
+              if (element) {
+                const elementTop = element.offsetTop;
+                const offset = 100; // 100px offset from top
+                console.log('Scrolling to position:', elementTop - offset);
+                window.scrollTo({
+                  top: elementTop - offset,
+                  behavior: 'smooth'
+                });
+              }
+            }, 500);
+          } else {
+            console.log('Expanded section ref not found. Stable key:', expandedSectionFromURL, 'Index key:', indexKey);
+          }
         }
-        
-        if (savedExpandedSections !== null) {
-          setExpandedSections(JSON.parse(savedExpandedSections));
+      };
+
+      // Try to scroll immediately, and retry if refs aren't ready
+      let retryCount = 0;
+      const maxRetries = 20;
+      
+      const attemptScroll = () => {
+        console.log('Scroll attempt:', retryCount + 1);
+        if (workflow && type) {
+          const sectionKey = findSectionKeyForWorkflow(workflow, type);
+          if (sectionKey && sectionRefs.current[sectionKey]) {
+            scrollToSection();
+          } else if (retryCount < maxRetries) {
+            retryCount++;
+            console.log('Retrying scroll, attempt:', retryCount);
+            setTimeout(attemptScroll, 100);
+          } else {
+            console.log('Max retries reached for workflow scroll');
+          }
+        } else if (expandedSectionFromURL) {
+          // Convert stable key to index key for ref lookup
+          const indexKey = findIndexKeyFromStableKey(expandedSectionFromURL);
+          if (indexKey && sectionRefs.current[indexKey]) {
+            scrollToSection();
+          } else if (retryCount < maxRetries) {
+            retryCount++;
+            console.log('Retrying scroll, attempt:', retryCount);
+            setTimeout(attemptScroll, 100);
+          } else {
+            console.log('Max retries reached for expanded section scroll');
+          }
         }
-      }, 100);
-    } catch (error) {
-      console.error('Error loading persisted state:', error);
+      };
+
+      attemptScroll();
+    } else {
+      console.log('No URL parameters found, skipping scroll');
     }
-  }, []);
+  }, []); // Only run on mount
+
+  const findSectionKeyForWorkflow = (workflow: string, type: string): string | null => {
+    let operations;
+    switch (type) {
+      case 'read':
+        operations = readOperations;
+        break;
+      case 'create':
+        operations = createOperations;
+        break;
+      case 'modify':
+        operations = modifyDeleteOperations;
+        break;
+      case 'chained':
+        operations = chainedOperations;
+        break;
+      default:
+        return null;
+    }
+    
+    for (let sectionIndex = 0; sectionIndex < operations.length; sectionIndex++) {
+      const section = operations[sectionIndex];
+      if (section.workflows.includes(workflow)) {
+        return `${type}-${section.category.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')}`;
+      }
+    }
+    
+    return null;
+  };
+
+  const findIndexKeyFromStableKey = (stableKey: string): string | null => {
+    console.log('findIndexKeyFromStableKey called with:', stableKey);
+    const firstHyphenIndex = stableKey.indexOf('-');
+    const type = stableKey.substring(0, firstHyphenIndex);
+    const categorySlug = stableKey.substring(firstHyphenIndex + 1);
+    console.log('Parsed type:', type, 'categorySlug:', categorySlug);
+    
+    let operations;
+    
+    switch (type) {
+      case 'read':
+        operations = readOperations;
+        break;
+      case 'create':
+        operations = createOperations;
+        break;
+      case 'modify':
+        operations = modifyDeleteOperations;
+        break;
+      case 'chained':
+        operations = chainedOperations;
+        break;
+      default:
+        console.log('Unknown type:', type);
+        return null;
+    }
+    
+    console.log('Operations length:', operations.length);
+    
+    if (operations) {
+      const sectionIndex = operations.findIndex(section => {
+        const sectionSlug = section.category.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+        console.log('Comparing sectionSlug:', sectionSlug, 'with categorySlug:', categorySlug);
+        return sectionSlug === categorySlug;
+      });
+      console.log('Found sectionIndex:', sectionIndex);
+      if (sectionIndex >= 0) {
+        const indexKey = `${type}-${sectionIndex}`;
+        console.log('Returning indexKey:', indexKey);
+        return indexKey;
+      }
+    }
+    
+    console.log('No matching section found');
+    return null;
+  };
+
+  const updateURL = (newParams: Record<string, string | null>) => {
+    console.log('updateURL called with params:', newParams);
+    
+    try {
+      const params = new URLSearchParams(searchParams?.toString() || '');
+      
+      Object.entries(newParams).forEach(([key, value]) => {
+        if (value === null) {
+          params.delete(key);
+        } else {
+          params.set(key, value);
+        }
+      });
+      
+      const newURL = `/mcp?${params.toString()}`;
+      console.log('Updating URL to:', newURL);
+      router.push(newURL, { scroll: false });
+    } catch (error) {
+      console.error('Error updating URL:', error);
+    }
+  };
 
   const toggleSectionExpanded = (sectionKey: string) => {
-    setExpandedSections(prev => {
-      const newState = {
-        ...prev,
-        [sectionKey]: !prev[sectionKey]
-      };
-      // Save to localStorage
-      try {
-        localStorage.setItem('mcp-expanded-sections', JSON.stringify(newState));
-      } catch (error) {
-        console.error('Error saving expanded sections:', error);
-      }
-      return newState;
-    });
+    console.log('toggleSectionExpanded called with sectionKey:', sectionKey);
+    
+    // Extract the type and find the category from the workflow data
+    const type = sectionKey.split('-')[0];
+    let operations;
+    
+    switch (type) {
+      case 'read':
+        operations = readOperations;
+        break;
+      case 'create':
+        operations = createOperations;
+        break;
+      case 'modify':
+        operations = modifyDeleteOperations;
+        break;
+      case 'chained':
+        operations = chainedOperations;
+        break;
+      default:
+        console.log('Unknown type:', type);
+        return;
+    }
+    
+    // Find the section by extracting the index from the sectionKey
+    const sectionIndex = parseInt(sectionKey.split('-')[1]);
+    console.log('sectionIndex:', sectionIndex, 'operations length:', operations.length);
+    
+    if (sectionIndex >= 0 && sectionIndex < operations.length) {
+      const section = operations[sectionIndex];
+      console.log('Found section:', section.category);
+      const stableSectionKey = `${type}-${section.category.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')}`;
+      console.log('stableSectionKey:', stableSectionKey);
+      
+      // Read current section directly from searchParams to avoid timing issues
+      const currentSection = searchParams?.get('section');
+      console.log('currentSection from searchParams:', currentSection);
+      const newExpandedSection = currentSection === stableSectionKey ? null : stableSectionKey;
+      console.log('newExpandedSection:', newExpandedSection);
+      updateURL({ section: newExpandedSection });
+    } else {
+      console.log('Invalid sectionIndex:', sectionIndex);
+    }
   };
 
   const handleHumanLoopToggle = (expanded: boolean) => {
     setIsHumanLoopExpanded(expanded);
-    // Save to localStorage
-    try {
-      localStorage.setItem('mcp-human-loop-expanded', JSON.stringify(expanded));
-    } catch (error) {
-      console.error('Error saving human loop state:', error);
-    }
+    updateURL({ humanLoop: expanded ? 'true' : null });
+  };
+
+  const handleTabChange = (tab: string) => {
+    updateURL({ tab, section: null }); // Clear section when changing tabs
   };
 
   const handlePromptClick = (prompt: string, operationType: string = 'read') => {
     const params = new URLSearchParams({ workflow: prompt, type: operationType });
+    
+    // Include current MCP page state in the chat URL
+    if (currentTab) params.set('tab', currentTab);
+    if (expandedSection) params.set('section', expandedSection);
+    if (isHumanLoopExpanded) params.set('humanLoop', 'true');
+    
     router.push(`/mcp/chat?${params.toString()}`);
   };
+
+  // Create a function that creates section-specific ref setters
+  const createSectionRefSetter = (operationType: string) => (el: HTMLDivElement | null) => {
+    if (el) {
+      // Find the section index by looking at the element's parent or data attribute
+      const cardElement = el.closest('[data-section-index]');
+      if (cardElement) {
+        const sectionIndex = cardElement.getAttribute('data-section-index');
+        if (sectionIndex) {
+          const sectionKey = `${operationType}-${sectionIndex}`;
+          sectionRefs.current[sectionKey] = el;
+          console.log('Ref assigned for section:', sectionKey);
+        }
+      }
+    }
+  };
+
+  // Create expandedSections object for compatibility with existing components
+  const expandedSections: Record<string, boolean> = {};
+  if (expandedSection) {
+    // Convert stable section key back to index-based key for component compatibility
+    const firstHyphenIndex = expandedSection.indexOf('-');
+    const type = expandedSection.substring(0, firstHyphenIndex);
+    const categorySlug = expandedSection.substring(firstHyphenIndex + 1);
+    let operations;
+    
+    switch (type) {
+      case 'read':
+        operations = readOperations;
+        break;
+      case 'create':
+        operations = createOperations;
+        break;
+      case 'modify':
+        operations = modifyDeleteOperations;
+        break;
+      case 'chained':
+        operations = chainedOperations;
+        break;
+      default:
+        break;
+    }
+    
+    if (operations) {
+      const sectionIndex = operations.findIndex(section => {
+        const sectionSlug = section.category.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+        return sectionSlug === categorySlug;
+      });
+      if (sectionIndex >= 0) {
+        const indexKey = `${type}-${sectionIndex}`;
+        expandedSections[indexKey] = true;
+      }
+    }
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
@@ -112,7 +388,7 @@ const MCPWorkflowInterface = () => {
 
         <div className="w-full">
           <div className="w-full">
-            <Tabs defaultValue="read" className="w-full">
+            <Tabs value={currentTab} onValueChange={handleTabChange} className="w-full">
               <TabsList className="grid w-full grid-cols-5">
                 <TabsTrigger value="read" className="flex items-center gap-2">
                   <Eye className="h-4 w-4" />
@@ -141,6 +417,7 @@ const MCPWorkflowInterface = () => {
                   expandedSections={expandedSections}
                   toggleSectionExpanded={toggleSectionExpanded}
                   handlePromptClick={handlePromptClick}
+                  setSectionRef={createSectionRefSetter('read')}
                 />
               </TabsContent>
 
@@ -149,6 +426,7 @@ const MCPWorkflowInterface = () => {
                   expandedSections={expandedSections}
                   toggleSectionExpanded={toggleSectionExpanded}
                   handlePromptClick={handlePromptClick}
+                  setSectionRef={createSectionRefSetter('create')}
                 />
               </TabsContent>
 
@@ -157,6 +435,7 @@ const MCPWorkflowInterface = () => {
                   expandedSections={expandedSections}
                   toggleSectionExpanded={toggleSectionExpanded}
                   handlePromptClick={handlePromptClick}
+                  setSectionRef={createSectionRefSetter('modify')}
                 />
               </TabsContent>
 
@@ -165,6 +444,7 @@ const MCPWorkflowInterface = () => {
                   expandedSections={expandedSections}
                   toggleSectionExpanded={toggleSectionExpanded}
                   handlePromptClick={handlePromptClick}
+                  setSectionRef={createSectionRefSetter('chained')}
                 />
               </TabsContent>
 
@@ -172,6 +452,7 @@ const MCPWorkflowInterface = () => {
                 <AuditLogsTab
                   auditLogs={auditLogs}
                   workflowMetrics={workflowMetrics}
+                  setSectionRef={createSectionRefSetter('audit')}
                 />
               </TabsContent>
             </Tabs>

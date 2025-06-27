@@ -43,6 +43,37 @@ const MCPChatPage = () => {
   const selectedPrompt = searchParams.get('workflow') || '';
   const operationType = searchParams.get('type') || 'read';
 
+  // Store current MCP state when navigating to chat
+  useEffect(() => {
+    if (selectedPrompt) {
+      // Store the current MCP page state for when we navigate back
+      const mcpState = {
+        tab: searchParams.get('tab') || 'read',
+        section: searchParams.get('section') || null,
+        humanLoop: searchParams.get('humanLoop') || null
+      };
+      sessionStorage.setItem('mcp-page-state', JSON.stringify(mcpState));
+    }
+  }, [selectedPrompt, searchParams]);
+
+  const handleBackToWorkflows = () => {
+    // Restore the MCP page state when navigating back
+    const savedState = sessionStorage.getItem('mcp-page-state');
+    if (savedState) {
+      const state = JSON.parse(savedState);
+      const params = new URLSearchParams();
+      
+      if (state.tab) params.set('tab', state.tab);
+      if (state.section) params.set('section', state.section);
+      if (state.humanLoop) params.set('humanLoop', state.humanLoop);
+      
+      const url = params.toString() ? `/mcp?${params.toString()}` : '/mcp';
+      router.push(url);
+    } else {
+      router.push('/mcp');
+    }
+  };
+
   useEffect(() => {
     // Initialize chat with the selected workflow
     if (selectedPrompt) {
@@ -453,7 +484,7 @@ const MCPChatPage = () => {
           <Button 
             variant="outline" 
             size="sm"
-            onClick={() => router.push('/mcp')}
+            onClick={handleBackToWorkflows}
             className="flex items-center gap-2"
           >
             <MynaArrowLeft className="h-4 w-4" />
