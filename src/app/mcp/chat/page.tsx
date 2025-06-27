@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { AuditLog } from '@/data/auditLogs';
@@ -38,6 +38,7 @@ const MCPChatPage = () => {
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [userInput, setUserInput] = useState('');
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
+  const chatEndRef = useRef<HTMLDivElement | null>(null);
 
   // Get workflow details from URL parameters
   const selectedPrompt = searchParams.get('workflow') || '';
@@ -91,6 +92,12 @@ const MCPChatPage = () => {
       ]);
     }
   }, [selectedPrompt, operationType]);
+
+  useEffect(() => {
+    if (chatEndRef.current) {
+      chatEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [chatMessages]);
 
   const addAuditLog = (
     workflow: string, 
@@ -302,7 +309,7 @@ const MCPChatPage = () => {
         validationChecks = ['ID format validation', 'UUID structure check'];
         resolution = 'User provided UUID format guidance';
         severity = 'LOW';
-        agentResponse = `❌ **Invalid contact ID format.**\n\n💡 **Contact IDs should be in UUID format** (e.g., 123e4567-e89b-12d3-a456-426614174000).\n\n🔍 **Try instead:**\n• Searching by email address if you have it\n• Using the correct UUID format\n• Checking if you meant to search by order number instead\n\n**Valid UUID example:** f47ac10b-58cc-4372-a567-0e02b2c3d479\n\nPlease provide a valid contact ID or email address.`;
+        agentResponse = `❌ **Invalid contact ID format.**\n\n💡 **Contact IDs should be in UUID format** (e.g., 123e4567-e89b-12d3-a456-426614174000).\n\n�� **Try instead:**\n• Searching by email address if you have it\n• Using the correct UUID format\n• Checking if you meant to search by order number instead\n\n**Valid UUID example:** f47ac10b-58cc-4372-a567-0e02b2c3d479\n\nPlease provide a valid contact ID or email address.`;
       } else if (userInputLower.includes('notfound@') || userInputLower.includes('missing@')) {
         errorType = 'BUSINESS_ERROR';
         errorMessage = `Contact not found for email 'notfound@example.com'`;
@@ -491,9 +498,9 @@ const MCPChatPage = () => {
               className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
             >
               <div
-                className={`max-w-[70%] p-4 rounded-lg shadow-sm ${
+                className={`max-w-[70%] p-4 rounded-lg shadow-sm border ${
                   message.type === 'user'
-                    ? `${colorScheme.userBubble} ${colorScheme.userText}`
+                    ? `${colorScheme.bg} ${colorScheme.border} ${colorScheme.text}`
                     : 'bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 border dark:border-gray-700'
                 }`}
               >
@@ -502,7 +509,7 @@ const MCPChatPage = () => {
                 </div>
                 <div
                   className={`text-xs mt-2 ${
-                    message.type === 'user' ? colorScheme.userTimestamp : 'text-gray-500 dark:text-gray-400'
+                    message.type === 'user' ? colorScheme.text : 'text-gray-500 dark:text-gray-400'
                   }`}
                 >
                   {message.timestamp}
@@ -510,20 +517,24 @@ const MCPChatPage = () => {
               </div>
             </div>
           ))}
+          <div ref={chatEndRef} />
         </div>
       </div>
 
       <div className="flex-shrink-0 p-6 border-t bg-white dark:bg-gray-800 dark:border-gray-700">
-        <div className="flex gap-3">
+        <div className="flex gap-0 items-stretch">
           <input
             type="text"
             value={userInput}
             onChange={(e) => setUserInput(e.target.value)}
             onKeyPress={handleKeyPress}
             placeholder="Type your response here..."
-            className="flex-1 px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+            className={`flex-1 h-12 px-4 border border-gray-300 dark:border-gray-600 rounded-l-lg rounded-r-none focus:outline-none focus:ring-2 ${colorScheme.ring} focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400`}
           />
-          <Button onClick={handleSendMessage} className="flex items-center gap-2 px-6">
+          <Button
+            onClick={handleSendMessage}
+            className="h-12 flex items-center gap-2 px-6 rounded-l-none rounded-r-lg border-l-0"
+          >
             <MynaSend className="h-4 w-4" />
             Send
           </Button>

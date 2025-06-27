@@ -11,6 +11,7 @@ export interface WorkflowColorScheme {
   userBubble: string;
   userText: string;
   userTimestamp: string;
+  ring: string;
 }
 
 export interface WorkflowTypeConfig {
@@ -35,7 +36,8 @@ export const workflowTypeConfigs: Record<string, WorkflowTypeConfig> = {
       buttonText: 'text-green-800 dark:text-green-200',
       userBubble: 'bg-green-600 dark:bg-green-900',
       userText: 'text-white',
-      userTimestamp: 'text-green-100 dark:text-green-300'
+      userTimestamp: 'text-green-100 dark:text-green-300',
+      ring: 'focus:ring-green-500',
     }
   },
   create: {
@@ -52,7 +54,8 @@ export const workflowTypeConfigs: Record<string, WorkflowTypeConfig> = {
       buttonText: 'text-blue-800 dark:text-blue-200',
       userBubble: 'bg-blue-600 dark:bg-blue-900',
       userText: 'text-white',
-      userTimestamp: 'text-blue-100 dark:text-blue-300'
+      userTimestamp: 'text-blue-100 dark:text-blue-300',
+      ring: 'focus:ring-blue-500',
     }
   },
   modify: {
@@ -69,7 +72,8 @@ export const workflowTypeConfigs: Record<string, WorkflowTypeConfig> = {
       buttonText: 'text-amber-800 dark:text-amber-200',
       userBubble: 'bg-amber-600 dark:bg-amber-900',
       userText: 'text-white',
-      userTimestamp: 'text-amber-100 dark:text-amber-300'
+      userTimestamp: 'text-amber-100 dark:text-amber-300',
+      ring: 'focus:ring-amber-500',
     }
   },
   chained: {
@@ -86,7 +90,8 @@ export const workflowTypeConfigs: Record<string, WorkflowTypeConfig> = {
       buttonText: 'text-purple-800 dark:text-purple-200',
       userBubble: 'bg-purple-600 dark:bg-purple-900',
       userText: 'text-white',
-      userTimestamp: 'text-purple-100 dark:text-purple-300'
+      userTimestamp: 'text-purple-100 dark:text-purple-300',
+      ring: 'focus:ring-purple-500',
     }
   }
 };
@@ -106,7 +111,8 @@ export const getWorkflowConfig = (type: string): WorkflowTypeConfig => {
       buttonText: 'text-gray-800 dark:text-gray-200',
       userBubble: 'bg-gray-600 dark:bg-gray-800',
       userText: 'text-white',
-      userTimestamp: 'text-gray-100 dark:text-gray-300'
+      userTimestamp: 'text-gray-100 dark:text-gray-300',
+      ring: 'focus:ring-gray-500',
     }
   };
 };
