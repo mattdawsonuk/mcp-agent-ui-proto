@@ -1,23 +1,13 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ChevronDown, ChevronUp, LucideIcon } from 'lucide-react';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 import { WorkflowOperation } from '@/data/workflowOperations';
+import { getWorkflowConfig } from '@/lib/workflowColors';
 
 interface WorkflowOperationsListProps {
   operations: WorkflowOperation[];
   operationType: string;
-  title: string;
-  description: string;
-  headerIcon: LucideIcon;
-  colorScheme: {
-    bg: string;
-    border: string;
-    text: string;
-    buttonBg: string;
-    buttonHover: string;
-    buttonText: string;
-  };
   expandedSections: Record<string, boolean>;
   toggleSectionExpanded: (sectionKey: string) => void;
   handlePromptClick: (prompt: string, operationType: string) => void;
@@ -27,24 +17,23 @@ interface WorkflowOperationsListProps {
 const WorkflowOperationsList: React.FC<WorkflowOperationsListProps> = ({
   operations,
   operationType,
-  title,
-  description,
-  headerIcon: HeaderIcon,
-  colorScheme,
   expandedSections,
   toggleSectionExpanded,
   handlePromptClick,
   setSectionRef,
 }) => {
+  const config = getWorkflowConfig(operationType);
+  const { colorScheme } = config;
+
   return (
     <>
       <div className={`mb-4 p-4 ${colorScheme.bg} border ${colorScheme.border} rounded-lg`}>
         <div className={`flex items-center gap-2 ${colorScheme.text}`}>
-          <HeaderIcon className="h-5 w-5" />
-          <span className="font-semibold">{title}</span>
+          <config.icon className="h-5 w-5" />
+          <span className="font-semibold">{config.title}</span>
         </div>
         <p className={`${colorScheme.text} text-sm mt-1 opacity-80`}>
-          {description}
+          {config.description}
         </p>
       </div>
       
@@ -68,7 +57,7 @@ const WorkflowOperationsList: React.FC<WorkflowOperationsListProps> = ({
               <CardHeader className="select-none">
                 <div className="flex items-center justify-between">
                   <CardTitle className="flex items-center gap-2 text-lg">
-                    <HeaderIcon className="h-4 w-4" />
+                    <config.icon className="h-4 w-4" />
                     {section.category}
                   </CardTitle>
                   <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
@@ -95,7 +84,7 @@ const WorkflowOperationsList: React.FC<WorkflowOperationsListProps> = ({
                         }}
                       >
                         <div className="flex items-center gap-2 w-full">
-                          <HeaderIcon className="h-4 w-4" />
+                          <config.icon className="h-4 w-4" />
                           <span className="flex-1 truncate">{workflow}</span>
                         </div>
                       </Button>

@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { AuditLog } from '@/data/auditLogs';
-import { MessageCircle, Zap, Eye, Plus, Edit } from 'lucide-react';
+import { getWorkflowConfig } from '@/lib/workflowColors';
 
 // MynaUI-style inline SVG icons for chat interface
 const MynaArrowLeft = ({ className }: { className?: string }) => (
@@ -447,35 +447,8 @@ const MCPChatPage = () => {
     }
   };
 
-  const getOperationTypeIcon = (type: string) => {
-    switch (type) {
-      case 'read':
-        return <Eye className="h-4 w-4" />;
-      case 'create':
-        return <Plus className="h-4 w-4" />;
-      case 'modify':
-        return <Edit className="h-4 w-4" />;
-      case 'chained':
-        return <Zap className="h-4 w-4" />;
-      default:
-        return <MessageCircle className="h-4 w-4" />;
-    }
-  };
-
-  const getOperationTypeColor = (type: string) => {
-    switch (type) {
-      case 'read':
-        return 'text-green-600 dark:text-green-400';
-      case 'create':
-        return 'text-blue-600 dark:text-blue-400';
-      case 'modify':
-        return 'text-amber-600 dark:text-amber-400';
-      case 'chained':
-        return 'text-purple-600 dark:text-purple-400';
-      default:
-        return 'text-gray-600 dark:text-gray-400';
-    }
-  };
+  const config = getWorkflowConfig(operationType);
+  const { colorScheme } = config;
 
   return (
     <div className="h-screen flex flex-col bg-gray-50 dark:bg-gray-900">
@@ -491,20 +464,20 @@ const MCPChatPage = () => {
             Back to Workflows
           </Button>
           <div className="flex items-center gap-2">
-            <MynaMessage className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+            <MynaMessage className={`h-5 w-5 ${colorScheme.icon}`} />
             <h2 className="text-xl font-semibold dark:text-white">MCP Agent Chat</h2>
           </div>
         </div>
-        <div className="p-3 bg-blue-50 border border-blue-200 dark:bg-blue-900 dark:border-blue-700 rounded-lg">
+        <div className={`p-3 ${colorScheme.bg} border ${colorScheme.border} rounded-lg`}>
           <div className="flex items-center gap-2 mb-2">
-            <span className={`${getOperationTypeColor(operationType)}`}>
-              {getOperationTypeIcon(operationType)}
+            <span className={colorScheme.icon}>
+              <config.icon className="h-4 w-4" />
             </span>
-            <span className="text-sm font-medium text-blue-800 dark:text-blue-200">
-              {operationType.charAt(0).toUpperCase() + operationType.slice(1)} Operation
+            <span className={`text-sm font-medium ${colorScheme.text}`}>
+              {config.title}
             </span>
           </div>
-          <p className="text-sm text-blue-800 dark:text-blue-200">
+          <p className={`text-sm ${colorScheme.text}`}>
             <strong>Selected Workflow:</strong> {selectedPrompt}
           </p>
         </div>
@@ -520,7 +493,7 @@ const MCPChatPage = () => {
               <div
                 className={`max-w-[70%] p-4 rounded-lg shadow-sm ${
                   message.type === 'user'
-                    ? 'bg-blue-600 text-white'
+                    ? `${colorScheme.userBubble} ${colorScheme.userText}`
                     : 'bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 border dark:border-gray-700'
                 }`}
               >
@@ -529,7 +502,7 @@ const MCPChatPage = () => {
                 </div>
                 <div
                   className={`text-xs mt-2 ${
-                    message.type === 'user' ? 'text-blue-100' : 'text-gray-500 dark:text-gray-400'
+                    message.type === 'user' ? colorScheme.userTimestamp : 'text-gray-500 dark:text-gray-400'
                   }`}
                 >
                   {message.timestamp}
