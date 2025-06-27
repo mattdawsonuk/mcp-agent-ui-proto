@@ -310,8 +310,9 @@ export const MCPWorkflowInterfaceClient: React.FC<MCPWorkflowInterfaceClientProp
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
       <div className="max-w-7xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">MCP Staging Org Workflow Interface</h1>
-          <p className="text-gray-600 dark:text-gray-300 mb-4">Organised by operation type. Click any button to execute a workflow.</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Aria</h1>
+          <p className="text-xl text-blue-700 dark:text-blue-300 mb-1">Autonomous Responsive Intelligence Assistant</p>
+          <p className="text-gray-600 dark:text-gray-300 mb-4">Wilmington PLC MCP Staging Org workflow interface organised by operation type. Click any button to execute a workflow.</p>
           
           <div className="flex gap-2 flex-wrap">
             {(() => {
