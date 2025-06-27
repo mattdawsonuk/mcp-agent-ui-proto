@@ -27,11 +27,11 @@ const WorkflowOperationsList: React.FC<WorkflowOperationsListProps> = ({
 
   return (
     <>
-      <div className={`mb-4 p-4 ${colorScheme.bg} border ${colorScheme.border} rounded-lg`}>
-        <div className={`flex items-center gap-2 ${colorScheme.text}`}>
+      <div className="mb-4">
+        <h2 className={`flex items-center gap-2 text-lg font-semibold ${colorScheme.text}`}>
           <config.icon className="h-5 w-5" />
-          <span className="font-semibold">{config.title}</span>
-        </div>
+          {config.title}
+        </h2>
         <p className={`${colorScheme.text} text-sm mt-1 opacity-80`}>
           {config.description}
         </p>
