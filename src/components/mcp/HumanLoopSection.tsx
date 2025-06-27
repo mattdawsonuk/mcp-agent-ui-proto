@@ -35,7 +35,6 @@ export const HumanLoopSection: React.FC<HumanLoopSectionProps> = ({
   }, []);
 
   const handleHeaderClick = () => {
-    console.log('HumanLoopSection header clicked, current state:', isHumanLoopExpanded);
     setIsHumanLoopExpanded(!isHumanLoopExpanded);
   };
 
