@@ -1,10 +1,12 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { AuditLog } from '@/data/auditLogs';
 import { getWorkflowConfig } from '@/lib/workflowColors';
+import { fetchAuditLogs } from '@/lib/api';
+import { Loader2 } from 'lucide-react';
 
 // MynaUI-style inline SVG icons for chat interface
 const MynaArrowLeft = ({ className }: { className?: string }) => (
@@ -43,6 +45,20 @@ const MCPChatPage = () => {
   // Get workflow details from URL parameters
   const selectedPrompt = searchParams.get('workflow') || '';
   const operationType = searchParams.get('type') || 'read';
+
+  // Fetch audit logs on component mount
+  useEffect(() => {
+    const loadAuditLogs = async () => {
+      try {
+        const logs = await fetchAuditLogs();
+        setAuditLogs(logs);
+      } catch (error) {
+        console.error('Failed to fetch audit logs:', error);
+      }
+    };
+
+    loadAuditLogs();
+  }, []);
 
   // Store current MCP state when navigating to chat
   useEffect(() => {
@@ -550,4 +566,19 @@ const MCPChatPage = () => {
   );
 };
 
-export default MCPChatPage; 
+const MCPChatPageWrapper = () => {
+  return (
+    <Suspense fallback={
+      <div className="h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-blue-600" />
+          <p className="text-gray-600 dark:text-gray-300">Loading chat...</p>
+        </div>
+      </div>
+    }>
+      <MCPChatPage />
+    </Suspense>
+  );
+};
+
+export default MCPChatPageWrapper; 

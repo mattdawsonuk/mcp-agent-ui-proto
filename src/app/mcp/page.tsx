@@ -1,13 +1,13 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, Suspense } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { BarChart3, Trash2 } from 'lucide-react';
+import { BarChart3, Trash2, Loader2 } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { initialAuditLogs, AuditLog } from '@/data/auditLogs';
-import { initialWorkflowMetrics, WorkflowMetrics } from '@/data/workflowMetrics';
-import { readOperations, createOperations, modifyDeleteOperations, chainedOperations } from '@/data/workflowOperations';
+import { AuditLog } from '@/data/auditLogs';
+import { WorkflowMetrics } from '@/data/workflowMetrics';
+import { WorkflowOperation } from '@/data/workflowOperations';
 import { HumanLoopSection } from '@/components/mcp/HumanLoopSection';
 import { ReadOperationsTab } from '@/components/mcp/ReadOperationsTab';
 import { CreateOperationsTab } from '@/components/mcp/CreateOperationsTab';
@@ -15,19 +15,49 @@ import { ModifyDeleteOperationsTab } from '@/components/mcp/ModifyDeleteOperatio
 import { ChainedWorkflowsTab } from '@/components/mcp/ChainedWorkflowsTab';
 import { AuditLogsTab } from '@/components/mcp/AuditLogsTab';
 import { getWorkflowConfig } from '@/lib/workflowColors';
+import { fetchWorkflowOperations, fetchAuditLogs, fetchWorkflowMetrics, WorkflowOperationsResponse } from '@/lib/api';
 
-const MCPWorkflowInterface = () => {
+const MCPWorkflowInterfaceContent = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isHumanLoopExpanded, setIsHumanLoopExpanded] = useState(false);
-  const [auditLogs] = useState<AuditLog[]>(initialAuditLogs);
-  const [workflowMetrics] = useState<WorkflowMetrics>(initialWorkflowMetrics);
+  const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
+  const [workflowMetrics, setWorkflowMetrics] = useState<WorkflowMetrics | null>(null);
+  const [workflowOperations, setWorkflowOperations] = useState<WorkflowOperationsResponse | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   // Get current state from URL parameters
   const currentTab = searchParams?.get('tab') || 'read';
   const expandedSection = searchParams?.get('section') || null;
   const isHumanLoopExpandedFromURL = searchParams?.get('humanLoop') === 'true';
+
+  // Fetch data on component mount
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        
+        const [operations, logs, metrics] = await Promise.all([
+          fetchWorkflowOperations(),
+          fetchAuditLogs(),
+          fetchWorkflowMetrics()
+        ]);
+        
+        setWorkflowOperations(operations);
+        setAuditLogs(logs);
+        setWorkflowMetrics(metrics);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to fetch data');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   // Update state when URL parameters change
   useEffect(() => {
@@ -36,6 +66,8 @@ const MCPWorkflowInterface = () => {
 
   // Scroll to section only on initial page load (not user interaction)
   useEffect(() => {
+    if (!workflowOperations) return; // Wait for data to load
+    
     // Use window.location.search directly to avoid useSearchParams timing issues
     const urlParams = new URLSearchParams(window.location.search);
     const workflow = urlParams.get('workflow');
@@ -104,22 +136,24 @@ const MCPWorkflowInterface = () => {
 
       attemptScroll();
     }
-  }, []); // Only run on mount
+  }, [workflowOperations]); // Run when data loads
 
   const findSectionKeyForWorkflow = (workflow: string, type: string): string | null => {
-    let operations;
+    if (!workflowOperations) return null;
+    
+    let operations: WorkflowOperation[];
     switch (type) {
       case 'read':
-        operations = readOperations;
+        operations = workflowOperations.read;
         break;
       case 'create':
-        operations = createOperations;
+        operations = workflowOperations.create;
         break;
       case 'modify':
-        operations = modifyDeleteOperations;
+        operations = workflowOperations.modifyDelete;
         break;
       case 'chained':
-        operations = chainedOperations;
+        operations = workflowOperations.chained;
         break;
       default:
         return null;
@@ -136,24 +170,26 @@ const MCPWorkflowInterface = () => {
   };
 
   const findIndexKeyFromStableKey = (stableKey: string): string | null => {
+    if (!workflowOperations) return null;
+    
     const firstHyphenIndex = stableKey.indexOf('-');
     const type = stableKey.substring(0, firstHyphenIndex);
     const categorySlug = stableKey.substring(firstHyphenIndex + 1);
     
-    let operations;
+    let operations: WorkflowOperation[] = [];
     
     switch (type) {
       case 'read':
-        operations = readOperations;
+        operations = workflowOperations.read;
         break;
       case 'create':
-        operations = createOperations;
+        operations = workflowOperations.create;
         break;
       case 'modify':
-        operations = modifyDeleteOperations;
+        operations = workflowOperations.modifyDelete;
         break;
       case 'chained':
-        operations = chainedOperations;
+        operations = workflowOperations.chained;
         break;
       default:
         return null;
@@ -193,21 +229,23 @@ const MCPWorkflowInterface = () => {
   };
 
   const toggleSectionExpanded = (sectionKey: string) => {
+    if (!workflowOperations) return;
+    
     const type = sectionKey.split('-')[0];
-    let operations;
+    let operations: WorkflowOperation[];
     
     switch (type) {
       case 'read':
-        operations = readOperations;
+        operations = workflowOperations.read;
         break;
       case 'create':
-        operations = createOperations;
+        operations = workflowOperations.create;
         break;
       case 'modify':
-        operations = modifyDeleteOperations;
+        operations = workflowOperations.modifyDelete;
         break;
       case 'chained':
-        operations = chainedOperations;
+        operations = workflowOperations.chained;
         break;
       default:
         return;
@@ -261,25 +299,25 @@ const MCPWorkflowInterface = () => {
 
   // Create expandedSections object for compatibility with existing components
   const expandedSections: Record<string, boolean> = {};
-  if (expandedSection) {
+  if (expandedSection && workflowOperations) {
     // Convert stable section key back to index-based key for component compatibility
     const firstHyphenIndex = expandedSection.indexOf('-');
     const type = expandedSection.substring(0, firstHyphenIndex);
     const categorySlug = expandedSection.substring(firstHyphenIndex + 1);
-    let operations;
+    let operations: WorkflowOperation[] = [];
     
     switch (type) {
       case 'read':
-        operations = readOperations;
+        operations = workflowOperations.read;
         break;
       case 'create':
-        operations = createOperations;
+        operations = workflowOperations.create;
         break;
       case 'modify':
-        operations = modifyDeleteOperations;
+        operations = workflowOperations.modifyDelete;
         break;
       case 'chained':
-        operations = chainedOperations;
+        operations = workflowOperations.chained;
         break;
       default:
         break;
@@ -297,6 +335,42 @@ const MCPWorkflowInterface = () => {
     }
   }
 
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-blue-600" />
+          <p className="text-gray-600 dark:text-gray-300">Loading workflow interface...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-red-600 mb-4">
+            <svg className="h-12 w-12 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+            </svg>
+          </div>
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Failed to load data</h2>
+          <p className="text-gray-600 dark:text-gray-300 mb-4">{error}</p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Show main interface when data is loaded
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
       <div className="max-w-7xl mx-auto">
@@ -384,6 +458,7 @@ const MCPWorkflowInterface = () => {
 
               <TabsContent value="read" className="mt-6">
                 <ReadOperationsTab
+                  operations={workflowOperations?.read || []}
                   expandedSections={expandedSections}
                   toggleSectionExpanded={toggleSectionExpanded}
                   handlePromptClick={handlePromptClick}
@@ -393,6 +468,7 @@ const MCPWorkflowInterface = () => {
 
               <TabsContent value="create" className="mt-6">
                 <CreateOperationsTab
+                  operations={workflowOperations?.create || []}
                   expandedSections={expandedSections}
                   toggleSectionExpanded={toggleSectionExpanded}
                   handlePromptClick={handlePromptClick}
@@ -402,6 +478,7 @@ const MCPWorkflowInterface = () => {
 
               <TabsContent value="modify" className="mt-6">
                 <ModifyDeleteOperationsTab
+                  operations={workflowOperations?.modifyDelete || []}
                   expandedSections={expandedSections}
                   toggleSectionExpanded={toggleSectionExpanded}
                   handlePromptClick={handlePromptClick}
@@ -411,6 +488,7 @@ const MCPWorkflowInterface = () => {
 
               <TabsContent value="chained" className="mt-6">
                 <ChainedWorkflowsTab
+                  operations={workflowOperations?.chained || []}
                   expandedSections={expandedSections}
                   toggleSectionExpanded={toggleSectionExpanded}
                   handlePromptClick={handlePromptClick}
@@ -421,7 +499,7 @@ const MCPWorkflowInterface = () => {
               <TabsContent value="audit" className="mt-6">
                 <AuditLogsTab
                   auditLogs={auditLogs}
-                  workflowMetrics={workflowMetrics}
+                  workflowMetrics={workflowMetrics!}
                   setSectionRef={createSectionRefSetter('audit')}
                 />
               </TabsContent>
@@ -430,6 +508,21 @@ const MCPWorkflowInterface = () => {
         </div>
       </div>
     </div>
+  );
+};
+
+const MCPWorkflowInterface = () => {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-blue-600" />
+          <p className="text-gray-600 dark:text-gray-300">Loading...</p>
+        </div>
+      </div>
+    }>
+      <MCPWorkflowInterfaceContent />
+    </Suspense>
   );
 };
 

@@ -1,8 +1,9 @@
 import React from 'react';
-import { chainedOperations } from '@/data/workflowOperations';
+import { WorkflowOperation } from '@/data/workflowOperations';
 import WorkflowOperationsList from './WorkflowOperationsList';
 
 interface ChainedWorkflowsTabProps {
+  operations: WorkflowOperation[];
   expandedSections: Record<string, boolean>;
   toggleSectionExpanded: (sectionKey: string) => void;
   handlePromptClick: (prompt: string, operationType: string) => void;
@@ -10,6 +11,7 @@ interface ChainedWorkflowsTabProps {
 }
 
 export const ChainedWorkflowsTab: React.FC<ChainedWorkflowsTabProps> = ({
+  operations,
   expandedSections,
   toggleSectionExpanded,
   handlePromptClick,
@@ -17,7 +19,7 @@ export const ChainedWorkflowsTab: React.FC<ChainedWorkflowsTabProps> = ({
 }) => {
   return (
     <WorkflowOperationsList
-      operations={chainedOperations}
+      operations={operations}
       operationType="chained"
       expandedSections={expandedSections}
       toggleSectionExpanded={toggleSectionExpanded}

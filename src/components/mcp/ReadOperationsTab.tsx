@@ -1,8 +1,9 @@
 import React from 'react';
-import { readOperations } from '@/data/workflowOperations';
+import { WorkflowOperation } from '@/data/workflowOperations';
 import WorkflowOperationsList from './WorkflowOperationsList';
 
 interface ReadOperationsTabProps {
+  operations: WorkflowOperation[];
   expandedSections: Record<string, boolean>;
   toggleSectionExpanded: (sectionKey: string) => void;
   handlePromptClick: (prompt: string, operationType: string) => void;
@@ -10,6 +11,7 @@ interface ReadOperationsTabProps {
 }
 
 export const ReadOperationsTab: React.FC<ReadOperationsTabProps> = ({
+  operations,
   expandedSections,
   toggleSectionExpanded,
   handlePromptClick,
@@ -17,7 +19,7 @@ export const ReadOperationsTab: React.FC<ReadOperationsTabProps> = ({
 }) => {
   return (
     <WorkflowOperationsList
-      operations={readOperations}
+      operations={operations}
       operationType="read"
       expandedSections={expandedSections}
       toggleSectionExpanded={toggleSectionExpanded}

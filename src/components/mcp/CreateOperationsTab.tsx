@@ -1,8 +1,9 @@
 import React from 'react';
-import { createOperations } from '@/data/workflowOperations';
+import { WorkflowOperation } from '@/data/workflowOperations';
 import WorkflowOperationsList from './WorkflowOperationsList';
 
 interface CreateOperationsTabProps {
+  operations: WorkflowOperation[];
   expandedSections: Record<string, boolean>;
   toggleSectionExpanded: (sectionKey: string) => void;
   handlePromptClick: (prompt: string, operationType: string) => void;
@@ -10,6 +11,7 @@ interface CreateOperationsTabProps {
 }
 
 export const CreateOperationsTab: React.FC<CreateOperationsTabProps> = ({
+  operations,
   expandedSections,
   toggleSectionExpanded,
   handlePromptClick,
@@ -17,7 +19,7 @@ export const CreateOperationsTab: React.FC<CreateOperationsTabProps> = ({
 }) => {
   return (
     <WorkflowOperationsList
-      operations={createOperations}
+      operations={operations}
       operationType="create"
       expandedSections={expandedSections}
       toggleSectionExpanded={toggleSectionExpanded}

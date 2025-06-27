@@ -1,8 +1,9 @@
 import React from 'react';
-import { modifyDeleteOperations } from '@/data/workflowOperations';
+import { WorkflowOperation } from '@/data/workflowOperations';
 import WorkflowOperationsList from './WorkflowOperationsList';
 
 interface ModifyDeleteOperationsTabProps {
+  operations: WorkflowOperation[];
   expandedSections: Record<string, boolean>;
   toggleSectionExpanded: (sectionKey: string) => void;
   handlePromptClick: (prompt: string, operationType: string) => void;
@@ -10,6 +11,7 @@ interface ModifyDeleteOperationsTabProps {
 }
 
 export const ModifyDeleteOperationsTab: React.FC<ModifyDeleteOperationsTabProps> = ({
+  operations,
   expandedSections,
   toggleSectionExpanded,
   handlePromptClick,
@@ -17,7 +19,7 @@ export const ModifyDeleteOperationsTab: React.FC<ModifyDeleteOperationsTabProps>
 }) => {
   return (
     <WorkflowOperationsList
-      operations={modifyDeleteOperations}
+      operations={operations}
       operationType="modify"
       expandedSections={expandedSections}
       toggleSectionExpanded={toggleSectionExpanded}
