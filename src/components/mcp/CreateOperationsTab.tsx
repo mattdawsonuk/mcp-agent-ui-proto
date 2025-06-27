@@ -34,31 +34,24 @@ const renderWorkflowSection = (
       const Icon = iconMap[section.icon as keyof typeof iconMap];
       
       return (
-        <Card key={sectionIndex} className="w-full">
-          <CardHeader>
+        <Card 
+          key={sectionIndex} 
+          className="w-full cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+          onClick={() => toggleSectionExpanded(sectionKey)}
+        >
+          <CardHeader className="select-none">
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2 text-lg">
                 {Icon && <Icon />}
                 {section.category}
               </CardTitle>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => toggleSectionExpanded(sectionKey)}
-                className="flex items-center gap-2"
-              >
+              <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
                 {isExpanded ? (
-                  <>
-                    <ChevronUp className="h-4 w-4" />
-                    Collapse
-                  </>
+                  <ChevronUp className="h-4 w-4" />
                 ) : (
-                  <>
-                    <ChevronDown className="h-4 w-4" />
-                    Expand
-                  </>
+                  <ChevronDown className="h-4 w-4" />
                 )}
-              </Button>
+              </div>
             </div>
           </CardHeader>
           {isExpanded && (

@@ -1,6 +1,5 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { AlertTriangle, ChevronDown, ChevronUp } from 'lucide-react';
 
 interface HumanLoopSectionProps {
@@ -12,34 +11,32 @@ export const HumanLoopSection: React.FC<HumanLoopSectionProps> = ({
   isHumanLoopExpanded,
   setIsHumanLoopExpanded,
 }) => {
+  const handleHeaderClick = () => {
+    console.log('HumanLoopSection header clicked, current state:', isHumanLoopExpanded);
+    setIsHumanLoopExpanded(!isHumanLoopExpanded);
+  };
+
   return (
-    <Card className="mb-8">
-      <CardHeader>
+    <Card 
+      className="mb-8 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+      onClick={handleHeaderClick}
+    >
+      <CardHeader className="select-none">
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg flex items-center gap-2 dark:text-white">
             <AlertTriangle className="h-4 w-4" />
             Human-in-the-Loop Interactions
           </CardTitle>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setIsHumanLoopExpanded(!isHumanLoopExpanded)}
-            className="flex items-center gap-2"
-          >
+          <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
             {isHumanLoopExpanded ? (
-              <>
-                <ChevronUp className="h-4 w-4" />
-                Collapse
-              </>
+              <ChevronUp className="h-4 w-4" />
             ) : (
-              <>
-                <ChevronDown className="h-4 w-4" />
-                Expand
-              </>
+              <ChevronDown className="h-4 w-4" />
             )}
-          </Button>
+          </div>
         </div>
       </CardHeader>
+      
       {isHumanLoopExpanded && (
         <CardContent className="space-y-4">
           <p className="text-sm text-gray-700 dark:text-gray-300">

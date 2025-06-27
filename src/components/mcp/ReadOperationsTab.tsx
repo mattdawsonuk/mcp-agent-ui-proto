@@ -1,7 +1,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { CheckCircle, Eye, ChevronDown, ChevronUp } from 'lucide-react';
+import { Eye, ChevronDown, ChevronUp } from 'lucide-react';
 import { readOperations, WorkflowOperation } from '@/data/workflowOperations';
 
 interface ReadOperationsTabProps {
@@ -34,32 +34,30 @@ const renderWorkflowSection = (
       const isExpanded = expandedSections[sectionKey];
       const Icon = iconMap[section.icon as keyof typeof iconMap];
       
+      const handleHeaderClick = () => {
+        console.log('ReadOperationsTab header clicked, sectionKey:', sectionKey, 'current state:', isExpanded);
+        toggleSectionExpanded(sectionKey);
+      };
+      
       return (
-        <Card key={sectionIndex} className="w-full">
-          <CardHeader>
+        <Card 
+          key={sectionIndex} 
+          className="w-full cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+          onClick={handleHeaderClick}
+        >
+          <CardHeader className="select-none">
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2 text-lg">
                 {Icon && <Icon />}
                 {section.category}
               </CardTitle>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => toggleSectionExpanded(sectionKey)}
-                className="flex items-center gap-2"
-              >
+              <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
                 {isExpanded ? (
-                  <>
-                    <ChevronUp className="h-4 w-4" />
-                    Collapse
-                  </>
+                  <ChevronUp className="h-4 w-4" />
                 ) : (
-                  <>
-                    <ChevronDown className="h-4 w-4" />
-                    Expand
-                  </>
+                  <ChevronDown className="h-4 w-4" />
                 )}
-              </Button>
+              </div>
             </div>
           </CardHeader>
           {isExpanded && (
@@ -97,11 +95,11 @@ export const ReadOperationsTab: React.FC<ReadOperationsTabProps> = ({
     <>
       <div className="mb-4 p-4 bg-green-50 border border-green-200 dark:bg-green-900 dark:border-green-700 rounded-lg">
         <div className="flex items-center gap-2 text-green-800 dark:text-green-200">
-          <CheckCircle className="h-5 w-5" />
-          <span className="font-semibold">Safe Operations</span>
+          <Eye className="h-5 w-5" />
+          <span className="font-semibold">Read Operations</span>
         </div>
         <p className="text-green-700 dark:text-green-300 text-sm mt-1">
-          These read-only operations execute immediately without confirmation. No data will be modified.
+          These operations retrieve data and execute immediately without requiring user confirmation.
         </p>
       </div>
       {renderWorkflowSection(
