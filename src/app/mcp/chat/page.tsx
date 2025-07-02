@@ -503,6 +503,7 @@ const MCPChatPage = () => {
               size="sm"
               onClick={handleBackToWorkflows}
               className="flex items-center gap-2"
+              aria-label="Return to main workflow interface"
             >
               <MynaArrowLeft className="h-4 w-4" />
               Back to Workflows
@@ -571,6 +572,7 @@ const MCPChatPage = () => {
             <Button
               onClick={handleSendMessage}
               className="h-12 flex items-center gap-2 px-6 rounded-l-none rounded-r-lg border-l-0"
+              aria-label="Send message to MCP agent"
             >
               <MynaSend className="h-4 w-4" />
               Send

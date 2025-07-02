@@ -358,23 +358,23 @@ export const MCPWorkflowInterfaceClient: React.FC<MCPWorkflowInterfaceClientProp
         {/* Main Tabs Interface */}
         <Tabs value={currentTab} onValueChange={handleTabChange} className="space-y-6">
           <TabsList className="grid w-full grid-cols-5">
-            <TabsTrigger value="read" className="flex items-center gap-2">
+            <TabsTrigger value="read" className="flex items-center gap-2" aria-label="View read operations - immediate execution workflows">
               {React.createElement(getWorkflowConfig('read').icon, { className: 'h-4 w-4' })}
               Read Operations
             </TabsTrigger>
-            <TabsTrigger value="create" className="flex items-center gap-2">
+            <TabsTrigger value="create" className="flex items-center gap-2" aria-label="View create operations - workflows requiring confirmation">
               {React.createElement(getWorkflowConfig('create').icon, { className: 'h-4 w-4' })}
               Create Operations
             </TabsTrigger>
-            <TabsTrigger value="modify" className="flex items-center gap-2">
+            <TabsTrigger value="modify" className="flex items-center gap-2" aria-label="View modify and delete operations - workflows requiring confirmation">
               {React.createElement(getWorkflowConfig('modify').icon, { className: 'h-4 w-4' })}
               Modify/Delete
             </TabsTrigger>
-            <TabsTrigger value="chained" className="flex items-center gap-2">
+            <TabsTrigger value="chained" className="flex items-center gap-2" aria-label="View chained workflows - multi-step workflow operations">
               {React.createElement(getWorkflowConfig('chained').icon, { className: 'h-4 w-4' })}
               Chained Workflows
             </TabsTrigger>
-            <TabsTrigger value="audit" className="flex items-center gap-2">
+            <TabsTrigger value="audit" className="flex items-center gap-2" aria-label="View audit logs and workflow metrics">
               <FileText className="h-4 w-4" />
               Audit Logs
             </TabsTrigger>

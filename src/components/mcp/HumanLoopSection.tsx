@@ -89,6 +89,7 @@ export const HumanLoopSection: React.FC<HumanLoopSectionProps> = ({
     <Card 
       className="mb-8 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
       onClick={handleHeaderClick}
+      aria-label={`${isHumanLoopExpanded ? 'Collapse' : 'Expand'} human-in-the-loop interactions section`}
     >
       <CardHeader className="select-none">
         <div className="flex items-center justify-between">

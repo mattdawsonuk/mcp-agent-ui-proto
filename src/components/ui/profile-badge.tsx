@@ -53,15 +53,16 @@ export function ProfileBadge() {
 
   if (error || !userProfile) {
     return (
-      <Button
-        variant="outline"
-        size="icon"
-        className="rounded-full bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 shadow-sm"
-        title="Profile unavailable"
-      >
-        <User className="h-6 w-6" />
-        <span className="sr-only">Profile unavailable</span>
-      </Button>
+          <Button
+      variant="outline"
+      size="icon"
+      className="rounded-full bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 shadow-sm"
+      title="Profile unavailable"
+      aria-label="Profile unavailable - click to view user profile"
+    >
+      <User className="h-6 w-6" />
+      <span className="sr-only">Profile unavailable</span>
+    </Button>
     )
   }
 
@@ -71,6 +72,7 @@ export function ProfileBadge() {
       size="icon"
       className="rounded-full bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 shadow-sm overflow-hidden"
       title={`${userProfile.name} (${userProfile.email})`}
+      aria-label={`User profile for ${userProfile.name} - click to view profile details`}
     >
       {userProfile.avatarUrl ? (
         <img

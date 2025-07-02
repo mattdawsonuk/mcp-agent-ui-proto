@@ -53,6 +53,7 @@ const WorkflowOperationsList: React.FC<WorkflowOperationsListProps> = ({
               onClick={handleHeaderClick}
               data-section-index={sectionIndex}
               ref={setSectionRef}
+              aria-label={`${isExpanded ? 'Collapse' : 'Expand'} ${section.category} section`}
             >
               <CardHeader className="select-none">
                 <div className="flex items-center justify-between">
@@ -82,6 +83,7 @@ const WorkflowOperationsList: React.FC<WorkflowOperationsListProps> = ({
                           e.stopPropagation();
                           handlePromptClick(workflow, operationType);
                         }}
+                        aria-label={`Execute ${workflow} workflow - ${config.description}`}
                       >
                         <div className="flex items-center gap-2 w-full">
                           <config.icon className="h-4 w-4" />
