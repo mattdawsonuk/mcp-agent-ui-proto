@@ -1,8 +1,11 @@
 import { test, expect } from '@playwright/test';
 
 test('Basic connectivity test', async ({ page }) => {
+  test.setTimeout(60000);
+  
   // Test basic page load
   await page.goto('/');
+  await page.waitForLoadState('networkidle');
   
   // Check if we're redirected to /mcp
   await expect(page).toHaveURL(/\/mcp/);

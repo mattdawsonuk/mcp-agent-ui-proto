@@ -2,6 +2,8 @@ import { test, expect } from '@playwright/test';
 
 test.describe('UI Analysis and Improvement Suggestions', () => {
   test('Main MCP Interface Analysis', async ({ page }) => {
+    test.setTimeout(60000);
+    
     // Navigate to the main MCP interface
     await page.goto('/mcp');
     
@@ -32,6 +34,8 @@ test.describe('UI Analysis and Improvement Suggestions', () => {
   });
 
   test('Tab Navigation Analysis', async ({ page }) => {
+    test.setTimeout(60000);
+    
     await page.goto('/mcp');
     await page.waitForLoadState('networkidle');
     

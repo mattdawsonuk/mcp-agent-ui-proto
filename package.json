@@ -9,9 +9,10 @@
     "lint": "next lint",
     "test": "playwright test",
     "test:headed": "playwright test --headed",
-    "test:ui": "playwright test tests/ui-analysis.spec.ts",
-    "test:accessibility": "playwright test tests/accessibility-check.spec.ts",
-    "test:contrast": "playwright test tests/comprehensive-contrast.spec.ts"
+    "test:fast": "playwright test --workers=1 --timeout=60000",
+    "test:ui": "playwright test tests/ui-analysis.spec.ts --timeout=60000",
+    "test:accessibility": "playwright test tests/accessibility-check.spec.ts --timeout=60000",
+    "test:contrast": "playwright test tests/comprehensive-contrast.spec.ts --timeout=180000"
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.2.3",

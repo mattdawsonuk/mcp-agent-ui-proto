@@ -62,7 +62,8 @@ test('Comprehensive contrast check across all pages and tabs', async ({ page }) 
       }
     }, theme);
     await page.reload();
-    await page.waitForTimeout(2000);
+    await page.waitForLoadState('networkidle');
+    await page.waitForTimeout(1000);
   }
 
   // Test main MCP interface with all tabs

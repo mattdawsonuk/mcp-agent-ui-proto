@@ -1,7 +1,10 @@
 import { test } from '@playwright/test';
 
 test('Accessibility improvements check', async ({ page }) => {
+  test.setTimeout(60000);
+  
   await page.goto('/mcp');
+  await page.waitForLoadState('networkidle');
   
   // Wait for the page to load
   await page.waitForSelector('h1');

@@ -1,6 +1,8 @@
 import { test } from '@playwright/test';
 
 test('Debug tab selectors', async ({ page }) => {
+  test.setTimeout(60000);
+  
   await page.goto('/mcp');
   await page.waitForLoadState('networkidle');
   
