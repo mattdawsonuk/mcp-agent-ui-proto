@@ -17,12 +17,6 @@ const MynaArrowLeft = ({ className }: { className?: string }) => (
   </svg>
 );
 
-const MynaMessage = ({ className }: { className?: string }) => (
-  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-  </svg>
-);
-
 const MynaSend = ({ className }: { className?: string }) => (
   <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
     <path d="M9.912 12H3l18-9-9 18-2.088-6Z" />
@@ -493,21 +487,19 @@ const MCPChatPage = () => {
     <div className="h-screen flex flex-col bg-gray-50 dark:bg-gray-900">
       <div className="flex-shrink-0 p-6 border-b bg-white dark:bg-gray-800 dark:border-gray-700">
         <div className="max-w-7xl mx-auto w-full px-6">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center mb-4">
             <div className="flex items-center gap-2">
-              <MynaMessage className={`h-5 w-5 ${colorScheme.icon}`} />
-              <h2 className="text-xl font-semibold dark:text-white">MCP Agent Chat</h2>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={handleBackToWorkflows}
+                className="rounded-full border-2 border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                aria-label="Return to main workflow interface"
+              >
+                <MynaArrowLeft className="h-5 w-5" />
+              </Button>
+              <h2 className="text-xl font-semibold dark:text-white ml-2">MCP Agent Chat</h2>
             </div>
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={handleBackToWorkflows}
-              className="flex items-center gap-2"
-              aria-label="Return to main workflow interface"
-            >
-              <MynaArrowLeft className="h-4 w-4" />
-              Back to Workflows
-            </Button>
           </div>
           <div className={`p-3 ${colorScheme.bg} border ${colorScheme.border} rounded-lg`}>
             <div className="flex items-center gap-2 mb-2">
