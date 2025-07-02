@@ -12,7 +12,8 @@
     "test:fast": "playwright test --workers=1 --timeout=60000",
     "test:ui": "playwright test tests/ui-analysis.spec.ts --timeout=60000",
     "test:accessibility": "playwright test tests/accessibility-check.spec.ts --timeout=60000",
-    "test:contrast": "playwright test tests/comprehensive-contrast.spec.ts --timeout=180000"
+    "test:contrast": "playwright test tests/comprehensive-contrast.spec.ts --timeout=180000",
+    "test:framework": "playwright test tests/framework-check.spec.ts --headed --timeout=60000 --workers=1",
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.2.3",
