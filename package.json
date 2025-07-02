@@ -6,7 +6,12 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:ui": "playwright test tests/ui-analysis.spec.ts",
+    "test:accessibility": "playwright test tests/accessibility-check.spec.ts",
+    "test:contrast": "playwright test tests/comprehensive-contrast.spec.ts"
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.2.3",
